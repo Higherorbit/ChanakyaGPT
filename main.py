@@ -3,6 +3,7 @@ import pyttsx3
 import pywhatkit
 import datetime
 import wikipedia
+from config import api_key
 import pyjokes
 import webbrowser
 
@@ -21,6 +22,28 @@ engine.setProperty('voice', voices[1].id)
 def talk(text):
     engine.say(text)
     engine.runAndWait()
+
+chatStr =""
+def chat(query):
+    global chatStr
+    print(chatStr)
+    openai.api_key = api_key
+    chatStr += f"Saman: {query}\n LiteAlexa: "
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt= chatStr,
+        temperature=0.7,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    try:
+        talk(response["choices"][0]["text"])
+        chatStr += f"{response['choices'][0]['text']}\n"
+        return response["choices"][0]["text"]
+    except:
+        pass
 
 def ai(prompt):
     openai.api_key = api_key
@@ -72,7 +95,7 @@ def run_wife():
         song=command.replace('play','')
         talk('playing'+song)
         pywhatkit.playonyt(song)
-        
+
     elif 'time' in command:
         time=datetime.datetime.now().strftime('%I:%M %p')
         talk('Current time is '+ time)
@@ -100,11 +123,12 @@ def run_wife():
         ai(prompt=command)
 
     else:
-        talk('Speak clearly fucker!')
+        print("Chatting....")
+        chat(command)
 
 if __name__=='__main__':
     while True:
-        cnt=1
+        cnt=10
         while cnt:
             cnt=cnt-1
             run_wife()
